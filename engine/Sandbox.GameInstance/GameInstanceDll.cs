@@ -916,27 +916,10 @@ internal partial class GameInstanceDll : Engine.IGameInstanceDll
 	{
 		IGameInstanceDll.Current = new GameInstanceDll();
 
-		// PreJIT the methods in these dlls to avoid doing it during the game
-		{
-			var e = new Api.Events.EventRecord( "PreJIT.Game" );
-
-			using ( e.ScopeTimer( "Sandbox.GameInstance" ) )
-			{
-				Sandbox.ReflectionUtility.PreJIT( typeof( GameInstanceDll ).Assembly );
-			}
-
-			using ( e.ScopeTimer( "Sandbox.System" ) )
-			{
-				Sandbox.ReflectionUtility.PreJIT( typeof( Vector3 ).Assembly );
-			}
-
-			using ( e.ScopeTimer( "Sandbox.Engine" ) )
-			{
-				Sandbox.ReflectionUtility.PreJIT( typeof( Bootstrap ).Assembly );
-			}
-
-			e.Submit();
-		}
+		// PreJIT the methods in these dlls on background threads to avoid stalls during gameplay
+		_ = Sandbox.ReflectionUtility.PreJITAsync( typeof( GameInstanceDll ).Assembly );
+		_ = Sandbox.ReflectionUtility.PreJITAsync( typeof( Vector3 ).Assembly );
+		_ = Sandbox.ReflectionUtility.PreJITAsync( typeof( Bootstrap ).Assembly );
 	}
 
 	/// <summary>
